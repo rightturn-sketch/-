@@ -1285,9 +1285,18 @@ function buildMessage(){
   const ctx = getTripContext();
   const tripLabel = ctx ? ctx.tripType : (formData.type === 'pickup' ? '接機' : '送機');
   
-  const pickupFull = formData.pickup || formData.p_address || shortLocation('p', formData);
-  const dropoffFull = formData.dropoff || formData.d_address || shortLocation('d', formData);
-  
+  // 抓取完整的上車地址（不經過 shortLocation 切割）
+  const pCity = document.getElementById('f-p-city')?.value || formData.p_city || '';
+  const pDist = document.getElementById('f-p-dist')?.value || formData.p_dist || '';
+  const pAddr = document.getElementById('f-p-addr')?.value || document.getElementById('f-p-address')?.value || formData.p_addr || formData.pickup || '';
+  const pickupFull = (pCity || pDist) ? `${pCity}${pDist}${pAddr}` : (formData.pickup || pAddr);
+
+  // 抓取完整的下車地址（不經過 shortLocation 切割）
+  const dCity = document.getElementById('f-d-city')?.value || formData.d_city || '';
+  const dDist = document.getElementById('f-d-dist')?.value || formData.d_dist || '';
+  const dAddr = document.getElementById('f-d-addr')?.value || document.getElementById('f-d-address')?.value || formData.d_addr || formData.dropoff || '';
+  const dropoffFull = (dCity || dDist) ? `${dCity}${dDist}${dAddr}` : (formData.dropoff || dAddr);
+
   const vehicleLabel = VEHICLE_LABELS[formData.vehicle] || formData.vehicle;
   const priceVal = Number(document.getElementById('f-price')?.textContent || 0);
   const priceFormatted = priceVal.toLocaleString();
@@ -1299,8 +1308,8 @@ function buildMessage(){
     "用車：" + formData.date + " " + formData.time,
     "人數：" + formData.pax + " 人 | 行李：" + luggageTotal,
     "行程：" + tripLabel,
-    "上車：" + (formData.p_city ? `${formData.p_city}${formData.p_dist}${formData.p_addr}` : pickupFull),
-    "下車：" + (formData.d_city ? `${formData.d_city}${formData.d_dist}${formData.d_addr}` : dropoffFull),
+    "上車：" + pickupFull,
+    "下車：" + dropoffFull,
     "車輛類型：" + vehicleLabel
   ];
 
