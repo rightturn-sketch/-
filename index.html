@@ -1305,28 +1305,29 @@
     lines.push("預估價格：NT$ "+priceFormatted);
     return lines.join('\n');
   }
-    async function sendToLine(){
-    const text = buildMsg(); // 取得整理好的預約文字
-    if (typeof liff !== 'undefined' && liff.isInClient()) {
-      try {
+      async function sendToLine(){
+    try {
+      const text = buildMessage();
+      if (typeof liff !== 'undefined' && liff.isInClient()) {
         await liff.sendMessages([{ type: 'text', text: text }]);
-        liff.closeWindow(); // 發送成功後自動關閉頁面
-      } catch (err) {
-        alert("發送失敗：" + err.message);
+        liff.closeWindow();
+      } else {
+        const url = 'https://line.me/R/share?text=' + encodeURIComponent(text);
+        window.location.href = url;
       }
-    } else {
-      // 若非在 LINE App 內開啟，則使用原本的分享連結方式
-      const url = 'https://line.me/R/share?text=' + encodeURIComponent(text);
-      window.location.href = url;
+    } catch (err) {
+      alert("發送失敗：" + err.message);
     }
   }
 
   function copyText(){
-    navigator.clipboard.writeText(buildMsg());
+    navigator.clipboard.writeText(buildMessage());
     const toast = document.getElementById('toast');
     toast.classList.add('show');
     setTimeout(()=>toast.classList.remove('show'), 2000);
   }
+
+
 
   // ---------- init ----------
   (function init(){
