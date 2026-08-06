@@ -1282,41 +1282,48 @@
   }
 
 function buildMessage(){
-  const ctx = getTripContext();
-  const tripLabel = ctx ? ctx.tripType : (formData.type === 'pickup' ? '接機' : '送機');
+  const ctx = typeof getTripContext === 'function' ? getTripContext() : null;
   
-  // 抓取完整的上車地址（不經過 shortLocation 切割）
+  // 抓取完整的上車地址
   const pCity = document.getElementById('f-p-city')?.value || formData.p_city || '';
   const pDist = document.getElementById('f-p-dist')?.value || formData.p_dist || '';
   const pAddr = document.getElementById('f-p-addr')?.value || document.getElementById('f-p-address')?.value || formData.p_addr || formData.pickup || '';
   const pickupFull = (pCity || pDist) ? `${pCity}${pDist}${pAddr}` : (formData.pickup || pAddr);
 
-  // 抓取完整的下車地址（不經過 shortLocation 切割）
+  // 抓取完整的下車地址
   const dCity = document.getElementById('f-d-city')?.value || formData.d_city || '';
   const dDist = document.getElementById('f-d-dist')?.value || formData.d_dist || '';
   const dAddr = document.getElementById('f-d-addr')?.value || document.getElementById('f-d-address')?.value || formData.d_addr || formData.dropoff || '';
   const dropoffFull = (dCity || dDist) ? `${dCity}${dDist}${dAddr}` : (formData.dropoff || dAddr);
 
-  const vehicleLabel = VEHICLE_LABELS[formData.vehicle] || formData.vehicle;
+  const vehicleLabel = typeof VEHICLE_LABELS !== 'undefined' ? (VEHICLE_LABELS[formData.vehicle] || formData.vehicle) : formData.vehicle;
   const priceVal = Number(document.getElementById('f-price')?.textContent || 0);
   const priceFormatted = priceVal.toLocaleString();
 
+  // 正確呼叫行李計算函式
+  const luggageCount = typeof luggageTotal === 'function' ? luggageTotal() : 0;
+  const addons = typeof addonsText === 'function' ? addonsText() : '無';
+
   const lines = [
-    "【機場接送預約】",
-    "姓名：" + formData.name,
-    "電話：" + formData.phone,
-    "用車：" + formData.date + " " + formData.time,
-    "人數：" + formData.pax + " 人 | 行李：" + luggageTotal,
-    "行程：" + tripLabel,
-    "上車：" + pickupFull,
-    "下車：" + dropoffFull,
-    "車輛類型：" + vehicleLabel
+    "機場接送預約單",
+    "——————————",
+    "姓名：" + (formData.name || ''),
+    "電話：" + (formData.phone || ''),
+    "日期：" + (formData.date || '') + "　時間：" + (formData.time || ''),
+    "上車地點：" + pickupFull,
+    "下車地點：" + dropoffFull,
+    "人數：" + (formData.pax || 1) + " 人",
+    "行李：" + luggageCount + " 件",
+    "車型：" + vehicleLabel,
+    "附加服務：" + addons,
+    "預估金額：NT$ " + priceFormatted,
+    "——————————",
+    "由機場接送預約系統送出[span_0](start_span)[span_0](end_span)"
   ];
 
-  if(addonsText() !== '無') lines.push("附加服務：" + addonsText());
-  lines.push("預估價格：NT$ " + priceFormatted);
   return lines.join('\n');
 }
+
   
       async function sendToLine(){
     try {
