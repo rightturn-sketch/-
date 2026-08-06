@@ -1281,29 +1281,34 @@
     return parts.length ? parts.join('、') : '無';
   }
 
-  function buildMessage(){
-    const ctx = getTripContext();
-    const tripLabel = ctx ? ctx.tripType : (formData.dropoffType==='airport' ? '送機' : (formData.pickupType==='airport' ? '接機' : ''));
-    const pickupShort = shortLocation('p', formData.pickupType, formData.pTerminal, formData.pAirport) + (formData.pickupType==='airport' && formData.pFlight ? '（航班 '+formData.pFlight+'）' : '');
-    const dropoffShort = shortLocation('d', formData.dropoffType, formData.dTerminal, formData.dAirport) + (formData.dropoffType==='airport' && formData.dFlight ? '（航班 '+formData.dFlight+'）' : '');
-    const vehicleLabel = VEHICLE_LABELS[formData.vehicleType] || formData.vehicleType;
-    const priceVal = Number(document.getElementById('pass-price').value) || 0;
-    const priceFormatted = priceVal.toLocaleString('en-US');
+function buildMessage(){
+  const ctx = getTripContext();
+  const tripLabel = ctx ? ctx.tripType : (formData.type === 'pickup' ? '接機' : '送機');
+  
+  const pickupFull = formData.pickup || formData.p_address || shortLocation('p', formData);
+  const dropoffFull = formData.dropoff || formData.d_address || shortLocation('d', formData);
+  
+  const vehicleLabel = VEHICLE_LABELS[formData.vehicle] || formData.vehicle;
+  const priceVal = Number(document.getElementById('f-price')?.textContent || 0);
+  const priceFormatted = priceVal.toLocaleString();
 
-    const lines = [
-      "【機場接送預約】",
-      "姓名："+formData.name,
-      "電話："+formData.phone,
-      "用車："+formData.date+" "+formData.time,
-      "人數："+formData.pax+" 人｜行李："+luggageTotal()+" 件（"+luggageTextSpaced()+"）",
-      "行程："+tripLabel,
-      "上車："+pickupShort,
-      "下車："+dropoffShort,
-      "車輛類型："+vehicleLabel
-    ];
-    if(addonsText() !== '無') lines.push("附加服務："+addonsText());
-    lines.push("預估價格：NT$ "+priceFormatted);
-    return lines.join('\n');
+  const lines = [
+    "【機場接送預約】",
+    "姓名：" + formData.name,
+    "電話：" + formData.phone,
+    "用車：" + formData.date + " " + formData.time,
+    "人數：" + formData.pax + " 人 | 行李：" + luggageTotal,
+    "行程：" + tripLabel,
+    "上車：" + (formData.p_city ? `${formData.p_city}${formData.p_dist}${formData.p_addr}` : pickupFull),
+    "下車：" + (formData.d_city ? `${formData.d_city}${formData.d_dist}${formData.d_addr}` : dropoffFull),
+    "車輛類型：" + vehicleLabel
+  ];
+
+  if(addonsText() !== '無') lines.push("附加服務：" + addonsText());
+  lines.push("預估價格：NT$ " + priceFormatted);
+  return lines.join('\n');
+}
+
   }
       async function sendToLine(){
     try {
