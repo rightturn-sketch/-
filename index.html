@@ -1279,18 +1279,25 @@
     return lines.join('\n');
   }
 
+  function shareViaUrl(text){
+    const url = 'https://line.me/R/share?text=' + encodeURIComponent(text);
+    window.location.href = url;
+  }
+
   async function sendToLine(){
+    const text = buildMessage();
     try {
-      const text = buildMessage();
       if (typeof liff !== 'undefined' && liff.isInClient()) {
+        // sendMessages 需要 LIFF App 開啟 chat_message.write 權限，
+        // 若權限未開啟或尚未登入，會拋出錯誤，此時自動退回分享視窗，避免使用者卡住無法送出
         await liff.sendMessages([{ type: 'text', text: text }]);
         liff.closeWindow();
       } else {
-        const url = 'https://line.me/R/share?text=' + encodeURIComponent(text);
-        window.location.href = url;
+        shareViaUrl(text);
       }
     } catch (err) {
-      alert("發送失敗：" + err.message);
+      console.error("sendMessages 失敗，改用分享視窗", err);
+      shareViaUrl(text);
     }
   }
 
