@@ -1286,6 +1286,11 @@ function buildMessage(){
   const vehicleLabel = VEHICLE_LABELS[formData.vehicleType] || formData.vehicleType || '未選擇';
   const priceVal = Number(formData.price) || 0;
 
+  // 判斷航班號碼：接機看 pFlight，送機看 dFlight
+  const flightNo = formData.pickupType === 'airport' ? formData.pFlight
+                  : formData.dropoffType === 'airport' ? formData.dFlight
+                  : '';
+
   const lines = [
     "【機場接送預約】",
     "姓名：" + (formData.name || ''),
@@ -1294,15 +1299,24 @@ function buildMessage(){
     "人數：" + (formData.pax || 1) + " 人 | 行李：" + luggageTotal() + " 件（" + luggageText() + "）",
     "行程：" + (getTripContext() ? getTripContext().tripType : '—'),
     "上車：" + pickupText,
-    "下車：" + dropoffText,
+    "下車：" + dropoffText
+  ];
+
+  if (flightNo) {
+    lines.push("航班編號：" + flightNo);
+  }
+
+  lines.push(
     "車輛類型：" + vehicleLabel,
     "附加服務：" + addonsText(),
     "預估價格：NT$ " + priceVal.toLocaleString(),
     "——————————",
     "由機場接送預約系統送出"
-  ];
+  );
+
   return lines.join('\n');
 }
+
 
 
   
