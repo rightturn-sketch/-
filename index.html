@@ -1270,9 +1270,8 @@
     const landmark = formData[prefix+'Landmark'];
     const address = formData[prefix+'Address'];
     const city = formData[prefix+'City'], dist = formData[prefix+'District'];
-    if(landmark) return landmark;
-    if(address) return address;
-    return [city, dist].filter(Boolean).join('');
+    const detail = [landmark, address].filter(Boolean).join(' ');
+    return [city, dist, detail].filter(Boolean).join('');
   }
   function luggageTextSpaced(){
     const parts = Object.entries(formData.luggage).filter(([,q])=>q>0).map(([s,q])=>{
