@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>機場接送預約</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -1304,30 +1305,40 @@
     lines.push("預估價格：NT$ "+priceFormatted);
     return lines.join('\n');
   }
-  function sendToLine(){
-    const url = 'https://line.me/R/share?text=' + encodeURIComponent(buildMessage());
-    const a = document.createElement('a');
-    a.href = url;
-    a.target = '_blank';
-    a.rel = 'noopener';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    async function sendToLine(){
+    const text = buildMsg(); // 取得整理好的預約文字
+    if (typeof liff !== 'undefined' && liff.isInClient()) {
+      try {
+        await liff.sendMessages([{ type: 'text', text: text }]);
+        liff.closeWindow(); // 發送成功後自動關閉頁面
+      } catch (err) {
+        alert("發送失敗：" + err.message);
+      }
+    } else {
+      // 若非在 LINE App 內開啟，則使用原本的分享連結方式
+      const url = 'https://line.me/R/share?text=' + encodeURIComponent(text);
+      window.location.href = url;
+    }
   }
+
   function copyText(){
-    navigator.clipboard.writeText(buildMessage()).then(()=>{
-      const toast = document.getElementById('toast');
-      toast.classList.add('show');
-      setTimeout(()=>toast.classList.remove('show'), 1800);
-    });
+    navigator.clipboard.writeText(buildMsg());
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(()=>toast.classList.remove('show'), 2000);
   }
 
   // ---------- init ----------
   (function init(){
+    // 初始化 LIFF
+    if (typeof liff !== 'undefined') {
+      liff.init({ liffId: "2010998101-El82pwWI" }).catch(err => console.error("LIFF 初始化失敗", err));
+    }
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('f-date').min = today;
     showStep(0);
   })();
+
 </script>
 </body>
 </html>
